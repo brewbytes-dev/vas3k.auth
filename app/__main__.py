@@ -1,16 +1,16 @@
 import asyncio
 import logging
 
-# import sentry_sdk
+import sentry_sdk
 from aiogram.types import BotCommand, BotCommandScopeAllPrivateChats
 
 import bot_loader
+from app import config
 from app.handlers import help, join_requests
 from loader import dp
 
-
-# from src import config
-# sentry_sdk.init(config.SENTRY_DSN, traces_sample_rate=0.5)
+if config.SENTRY_DSN:
+    sentry_sdk.init(config.SENTRY_DSN, traces_sample_rate=0.5)
 
 
 logger = logging.getLogger(__name__)
