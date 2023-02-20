@@ -5,7 +5,7 @@ import logging
 from aiogram.types import BotCommand, BotCommandScopeAllPrivateChats
 
 import bot_loader
-from handlers import help
+from app.handlers import help
 from loader import dp
 
 
