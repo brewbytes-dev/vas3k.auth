@@ -14,7 +14,7 @@ async def get_member_by_username(username):
         async with aiohttp.ClientSession() as session:
             async with session.get(
                 f"{VAS3K_ENDPOINT}{USER}/{username}.json?service_token={JWT_TOKEN}",
-                params={"jwt": JWT_TOKEN}
+                params={"service_token": JWT_TOKEN}
             ) as response:
                 return await response.json()
     except Exception as e:
@@ -26,8 +26,8 @@ async def get_member_by_telegram_id(telegram_id):
     try:
         async with aiohttp.ClientSession() as session:
             async with session.get(
-                f"{VAS3K_ENDPOINT}{USER}{BY_TELEGRAM_ID}/{telegram_id}.json?service_token={JWT_TOKEN}",
-                params={"jwt": JWT_TOKEN}
+                f"{VAS3K_ENDPOINT}{USER}{BY_TELEGRAM_ID}/{telegram_id}.json",
+                params={"service_token": JWT_TOKEN}
             ) as response:
                 return await response.json()
     except Exception as e:
