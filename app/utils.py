@@ -27,7 +27,7 @@ async def user_mention(user_id, name='username', return_full_name_on_error=True)
 
 def get_version():
     here = Path(__file__).absolute().parent
-    entry = (here.parent / '__version__.py').read_text('utf-8')
+    entry = (here / '__version__.py').read_text('utf-8')
 
     try:
         version = re.findall(r"^__version__ = \"([^']+)\"\r?$", entry, re.M)[0]
