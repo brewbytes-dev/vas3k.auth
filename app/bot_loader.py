@@ -1,6 +1,6 @@
 from aiogram import Bot
 
-from src import config
+from app import config
 
 
 class AuthBot(Bot):

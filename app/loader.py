@@ -6,8 +6,8 @@ from aiogram.fsm.storage.redis import RedisStorage
 from aiogram.fsm.strategy import FSMStrategy
 from pytz_deprecation_shim import PytzUsageWarning
 
-from src import config
-from src.utils import get_version
+from app import config
+from app.utils import get_version
 
 warnings.filterwarnings(action="ignore", category=PytzUsageWarning)
 storage = RedisStorage.from_url(config.REDIS_URL, connection_kwargs={"max_connections": 256},

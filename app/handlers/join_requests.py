@@ -1,7 +1,7 @@
 import logging
 
 from aiogram import types, Router
-from src import club
+from app import club
 
 logger = logging.getLogger(__name__)
 router = Router(name="join_requests")
