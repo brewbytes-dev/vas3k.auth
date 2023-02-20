@@ -9,7 +9,7 @@ BY_TELEGRAM_ID = "/by_telegram_id"
 USER = "/user"
 
 
-def get_member_by_username(username):
+async def get_member_by_username(username):
     try:
         async with aiohttp.ClientSession() as session:
             async with session.get(
@@ -22,7 +22,7 @@ def get_member_by_username(username):
         return None
 
 
-def get_member_by_telegram_id(telegram_id):
+async def get_member_by_telegram_id(telegram_id):
     try:
         async with aiohttp.ClientSession() as session:
             async with session.get(
