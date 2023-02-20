@@ -1,0 +1,6 @@
+git+https://github.com/aiogram/aiogram.git@e8d279c8f2d904390cb800c1a5a156aff5427f19
+pytz-deprecation-shim==0.1.0.post0
+redis==4.3.4
+aioredis==2.0.1
+python-dotenv==0.21.1
+aiohttp==3.8.4
