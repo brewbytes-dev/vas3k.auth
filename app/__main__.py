@@ -5,7 +5,7 @@ import logging
 from aiogram.types import BotCommand, BotCommandScopeAllPrivateChats
 
 import bot_loader
-from app.handlers import help
+from app.handlers import help, join_requests
 from loader import dp
 
 
@@ -30,7 +30,7 @@ async def main():
     await setup_commands()
 
     dp.include_router(help.router)
-    dp.include_router(new_chat_join_request)
+    dp.include_router(join_requests.router)
 
     try:
         # await dp.skip_updates()
