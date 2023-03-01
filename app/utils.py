@@ -1,6 +1,3 @@
-import re
-from pathlib import Path
-
 from bot_loader import bot
 
 
@@ -23,15 +20,3 @@ async def user_mention(user_id, name='username', return_full_name_on_error=True)
             return html_mention(user_id, name)
         else:
             raise RuntimeError('User is not available for mention')
-
-
-def get_version():
-    here = Path(__file__).absolute().parent
-    entry = (here / '__version__.py').read_text('utf-8')
-
-    try:
-        version = re.findall(r"^__version__ = \"([^']+)\"\r?$", entry, re.M)[0]
-    except IndexError:
-        raise RuntimeError('Unable to determine version.')
-
-    return version
