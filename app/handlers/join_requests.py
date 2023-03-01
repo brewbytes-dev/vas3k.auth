@@ -37,7 +37,7 @@ async def new_join_request(request: types.ChatJoinRequest, session: AsyncSession
     # notify current chats about option
     if chat_entry.show_intro is None:
         await bot.send_message(request.chat.id,
-                               f"включить/отключить автоинтро - {hpre('/show_intro')}",
+                               f"включить/отключить авто whois - {hpre('/auto_whois')}",
                                parse_mode=ParseMode.HTML)
         chat_entry.show_intro = True
         await session.commit()
