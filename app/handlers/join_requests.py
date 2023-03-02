@@ -3,6 +3,7 @@ from contextlib import suppress
 
 from aiogram import types, Router
 from aiogram.enums import ParseMode
+from aiogram.exceptions import TelegramBadRequest
 from aiogram.utils.markdown import hlink, hpre
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError, NoResultFound
@@ -11,6 +12,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app import club
 from app.bot_loader import bot
 from app.db.models import ChatEntry
+
+USER_ALREADY_PARTICIPANT = 'Bad Request: USER_ALREADY_PARTICIPANT'
 
 logger = logging.getLogger(__name__)
 router = Router(name="join_requests")
@@ -26,7 +29,11 @@ async def new_join_request(request: types.ChatJoinRequest, session: AsyncSession
     if not user:
         return
 
-    await request.approve()
+    try:
+        await request.approve()
+    except TelegramBadRequest as e:
+        if e.message != USER_ALREADY_PARTICIPANT:
+            raise e
 
     if chat_entry.show_intro or chat_entry.show_intro is None:
         intro_link = hlink(user.full_name, user.user_link)

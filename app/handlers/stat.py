@@ -38,4 +38,7 @@ async def show_groups(message: types.Message, session: AsyncSession):
         chat_list.append(hlink(chat_obj.title, chat_obj.invite_link))
         await asyncio.sleep(2)
 
-    await bot.send_message(DEVELOPER_ID, "\n".join(chat_list), parse_mode=ParseMode.HTML)
+    await bot.send_message(DEVELOPER_ID,
+                           "\n".join(chat_list),
+                           parse_mode=ParseMode.HTML,
+                           disable_web_page_preview=True)
