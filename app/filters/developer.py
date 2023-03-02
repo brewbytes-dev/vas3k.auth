@@ -11,4 +11,4 @@ class DeveloperFilter(BaseFilter):
         self.is_developer = is_developer
 
     async def __call__(self, message: Message, state: FSMContext) -> bool:
-        return (str(DEVELOPER_ID) == str(message.chat.id)) == self.is_developer
+        return (str(DEVELOPER_ID) == str(message.chat.id)) is self.is_developer

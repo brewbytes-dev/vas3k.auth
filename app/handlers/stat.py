@@ -20,7 +20,7 @@ router.message.filter(F.chat.type.in_({"private"}))
 router.message.filter(DeveloperFilter(is_developer=True))
 
 
-@router.message(Command(commands=['/stat']))
+@router.message(Command(commands=['stat']))
 async def show_groups(message: types.Message, session: AsyncSession):
     stmt = await session.execute(
         select(ChatEntry)

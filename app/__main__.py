@@ -35,12 +35,12 @@ async def main():
 
     await setup_commands()
 
+    dp.include_router(stat.router)
     dp.include_router(admin_changed_in_groups.router)
     dp.include_router(bot_in_group.router)
     dp.include_router(help.router)
     dp.include_router(join_requests.router)
     dp.include_router(group_admin.router)
-    dp.include_router(stat.router)
     #
     dp.message.middleware(DbSessionMiddleware(db_pool))
     dp.message.middleware(AdminMiddleware())
