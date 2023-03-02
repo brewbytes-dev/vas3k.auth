@@ -7,7 +7,7 @@ from aiogram.types import BotCommand, BotCommandScopeAllPrivateChats
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 from app import config
 from app.bot_loader import bot
-from app.handlers import help, join_requests, group_admin, admin_changed_in_groups, bot_in_group
+from app.handlers import help, join_requests, group_admin, admin_changed_in_groups, bot_in_group, stat
 from app.middlewares.admin import AdminMiddleware
 from app.middlewares.db import DbSessionMiddleware
 from loader import dp
@@ -40,6 +40,7 @@ async def main():
     dp.include_router(help.router)
     dp.include_router(join_requests.router)
     dp.include_router(group_admin.router)
+    dp.include_router(stat.router)
     #
     dp.message.middleware(DbSessionMiddleware(db_pool))
     dp.message.middleware(AdminMiddleware())
