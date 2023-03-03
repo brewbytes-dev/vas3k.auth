@@ -31,8 +31,6 @@ async def show_groups(message: types.Message, session: AsyncSession):
     chat_list = []
     for chat in chats:
         chat_id = str(chat.chat_id)
-        if not chat_id.startswith('-'):
-            chat_id = "-100" + str(chat.chat_id)
 
         try:
             chat_obj = await bot.get_chat(chat_id)
