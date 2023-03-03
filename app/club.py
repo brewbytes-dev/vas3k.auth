@@ -1,6 +1,5 @@
 import logging
-from dataclasses import dataclass, field, fields
-from typing import Optional
+from dataclasses import dataclass, fields
 
 import aiohttp
 
@@ -16,6 +15,8 @@ USER = "/user"
 class ClubUser:
     full_name: str
     slug: str
+    moderation_status: str
+    is_active_member: bool
 
     def __init__(self, **kwargs):
         names = set([f.name for f in fields(self)])
@@ -26,6 +27,10 @@ class ClubUser:
     @property
     def user_link(self):
         return f"{VAS3K_ENDPOINT}{USER}/{self.slug}"
+
+    @property
+    def approved(self):
+        return self.moderation_status == "approved"
 
 
 async def get_member_by_username(username):

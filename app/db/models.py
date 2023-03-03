@@ -7,3 +7,4 @@ class ChatEntry(Base):
 
     chat_id = Column(Integer, primary_key=True)
     show_intro = Column(Boolean, nullable=False)
+    only_active = Column(Boolean, nullable=False)

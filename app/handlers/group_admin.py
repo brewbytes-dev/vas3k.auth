@@ -16,7 +16,7 @@ router.message.filter(AdminFilter(is_admin=True))
 
 @router.message(Command(commands=['auto_whois']))
 async def show_intro(message: types.Message, session: AsyncSession):
-    chat_entry, _ = await get_or_create_new_chat(message.chat.shifted_id, session)
+    chat_entry, _ = await get_or_create_new_chat(message.chat.id, session)
 
     previous_status = chat_entry.show_intro
     switched_status = not previous_status
@@ -26,4 +26,19 @@ async def show_intro(message: types.Message, session: AsyncSession):
         await message.answer("Авто-whois выключен")
 
     chat_entry.show_intro = switched_status
+    await session.commit()
+
+
+@router.message(Command(commands=['only_active']))
+async def only_active(message: types.Message, session: AsyncSession):
+    chat_entry, _ = await get_or_create_new_chat(message.chat.id, session)
+
+    previous_status = chat_entry.only_active
+    switched_status = not previous_status
+    if switched_status:
+        await message.answer("Бот не будет пускать участников с истекшим членством")
+    else:
+        await message.answer("Бот будет пускать всех кто был когда либо в клубе")
+
+    chat_entry.only_active = switched_status
     await session.commit()

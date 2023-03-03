@@ -21,12 +21,15 @@ router = Router(name="join_requests")
 
 @router.chat_join_request()
 async def new_join_request(request: types.ChatJoinRequest, session: AsyncSession):
-    chat_entry, is_new = await get_or_create_new_chat(request.chat.shifted_id, session)
+    chat_entry, is_new = await get_or_create_new_chat(request.chat.id, session)
 
     user_telegram_id = request.user_chat_id
     user = await club.user_by_telegram_id(user_telegram_id)
 
-    if not user:
+    if not user or not user.approved:
+        return
+
+    if chat_entry.only_active and not user.is_active_member:
         return
 
     try:
@@ -40,6 +43,14 @@ async def new_join_request(request: types.ChatJoinRequest, session: AsyncSession
         await bot.send_message(request.chat.id,
                                f"У нас новый участник: {intro_link}!",
                                parse_mode=ParseMode.HTML)
+
+    # notify current chats about option
+    if chat_entry.only_active is None:
+        await bot.send_message(request.chat.id,
+                               f"новая опция - проверка наличия актуального члентсва в клубе {hpre('/only_active')}",
+                               parse_mode=ParseMode.HTML)
+        chat_entry.only_active = False
+        await session.commit()
 
     # notify current chats about option
     if chat_entry.show_intro is None:
