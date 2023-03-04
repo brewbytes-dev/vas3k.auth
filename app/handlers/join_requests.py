@@ -5,7 +5,8 @@ from aiogram import types, Router
 from aiogram.enums import ParseMode
 from aiogram.exceptions import TelegramBadRequest
 from aiogram.utils.markdown import hlink, hpre
-from sqlalchemy import select
+from asyncpg import InterfaceError
+from sqlalchemy import select, exc
 from sqlalchemy.exc import IntegrityError, NoResultFound
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -66,9 +67,19 @@ async def new_join_request(request: types.ChatJoinRequest, session: AsyncSession
 
 
 async def get_or_create_new_chat(chat_id, session: AsyncSession):
-    stmt = await session.execute(
-        select(ChatEntry).where(ChatEntry.chat_id == chat_id)
-    )
+
+    try:
+        stmt = await session.execute(
+            select(ChatEntry).where(ChatEntry.chat_id == chat_id)
+        )
+    except exc.DBAPIError as e:
+        if e.connection_invalidated:
+            logger.error("Connection was invalidated!")
+
+        stmt = await session.execute(
+            select(ChatEntry).where(ChatEntry.chat_id == chat_id)
+        )
+
     is_new = False
     try:
         chat_entry: ChatEntry = stmt.scalars().one()

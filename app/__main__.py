@@ -30,7 +30,7 @@ DEFAULT_USER_COMMANDS = [
 async def main():
     logger.info("Starting bot")
 
-    engine = create_async_engine(config.DATABASE_DSN, future=True, echo=False)
+    engine = create_async_engine(config.DATABASE_DSN, future=True, echo=False, pool_recycle=3600)
     db_pool = async_sessionmaker(engine, expire_on_commit=False, class_=AsyncSession)
 
     await setup_commands()
