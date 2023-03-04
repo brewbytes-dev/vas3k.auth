@@ -21,7 +21,11 @@ router = Router(name="join_requests")
 
 @router.chat_join_request()
 async def new_join_request(request: types.ChatJoinRequest, session: AsyncSession):
-    chat_entry, is_new = await get_or_create_new_chat(request.chat.id, session)
+    try:
+        chat_entry, _ = await get_or_create_new_chat(request.chat.id, session)
+    except Exception as e:
+        chat_entry = ChatEntry(chat_id=request.chat.id, show_intro=True, only_active=True)
+        logger.exception(e)
 
     user_telegram_id = request.user_chat_id
     user = await club.user_by_telegram_id(user_telegram_id)
