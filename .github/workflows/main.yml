@@ -20,3 +20,4 @@ jobs:
         with:
           git_remote_url: ${{ secrets.REMOTE_URL_AUTH_BOT }}
           ssh_private_key: ${{ secrets.SSH_PRIVATE_KEY }}
+          ssh_host_key: ${{ secrets.SSH_HOST_KEY }}
