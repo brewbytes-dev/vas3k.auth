@@ -12,6 +12,7 @@ from app.bot_loader import bot
 from app.config import DEVELOPER_ID
 from app.db.models import ChatEntry
 from app.filters.developer import DeveloperFilter
+from app.repos.chats import RepoChat
 
 logger = logging.getLogger(__name__)
 
@@ -22,11 +23,9 @@ router.message.filter(DeveloperFilter(is_developer=True))
 
 @router.message(Command(commands=['stat']))
 async def show_groups(message: types.Message, session: AsyncSession):
-    stmt = await session.execute(
-        select(ChatEntry)
-    )
+    repo_chat = RepoChat(session)
+    chats = await repo_chat.get_all()
 
-    chats = stmt.scalars().all()
     chat: ChatEntry
     chat_list = []
     for chat in chats:

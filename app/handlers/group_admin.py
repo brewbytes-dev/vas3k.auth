@@ -5,7 +5,7 @@ from aiogram.filters import Command
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.filters.admin import AdminFilter
-from app.handlers.join_requests import get_or_create_new_chat
+from app.repos.chats import RepoChat
 
 logger = logging.getLogger(__name__)
 
@@ -16,29 +16,21 @@ router.message.filter(AdminFilter(is_admin=True))
 
 @router.message(Command(commands=['auto_whois']))
 async def show_intro(message: types.Message, session: AsyncSession):
-    chat_entry, _ = await get_or_create_new_chat(message.chat.id, session)
+    repo_chat = RepoChat(session)
+    switched_status = await repo_chat.switch_show_intro(message.chat.id)
 
-    previous_status = chat_entry.show_intro
-    switched_status = not previous_status
     if switched_status:
         await message.answer("Бот будет показывать профиль новых пользователей")
     else:
         await message.answer("Авто-whois выключен")
 
-    chat_entry.show_intro = switched_status
-    await session.commit()
-
 
 @router.message(Command(commands=['only_active']))
 async def only_active(message: types.Message, session: AsyncSession):
-    chat_entry, _ = await get_or_create_new_chat(message.chat.id, session)
+    repo_chat = RepoChat(session)
+    switched_status = await repo_chat.switch_only_active(message.chat.id)
 
-    previous_status = chat_entry.only_active
-    switched_status = not previous_status
     if switched_status:
         await message.answer("Бот не будет пускать участников с истекшим членством")
     else:
         await message.answer("Бот будет пускать всех кто был когда либо в клубе")
-
-    chat_entry.only_active = switched_status
-    await session.commit()

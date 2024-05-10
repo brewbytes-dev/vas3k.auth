@@ -1,18 +1,12 @@
 import logging
-from contextlib import suppress
 
 from aiogram import types, Router
-from aiogram.enums import ParseMode
 from aiogram.exceptions import TelegramBadRequest
-from aiogram.utils.markdown import hlink, hpre
-from asyncpg import InterfaceError
-from sqlalchemy import select, exc
-from sqlalchemy.exc import IntegrityError, NoResultFound
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app import club
-from app.bot_loader import bot
-from app.db.models import ChatEntry
+from app.club import ClubUser
+from app.repos.chats import RepoChat
 
 USER_ALREADY_PARTICIPANT = 'Bad Request: USER_ALREADY_PARTICIPANT'
 
@@ -22,14 +16,11 @@ router = Router(name="join_requests")
 
 @router.chat_join_request()
 async def new_join_request(request: types.ChatJoinRequest, session: AsyncSession):
-    try:
-        chat_entry, _ = await get_or_create_new_chat(request.chat.id, session)
-    except Exception as e:
-        chat_entry = ChatEntry(chat_id=request.chat.id, show_intro=True, only_active=True)
-        logger.exception(e)
+    repo_chat = RepoChat(session)
+    chat_entry = await repo_chat.get_or_create(request.chat.id)
 
-    user_telegram_id = request.user_chat_id
-    user = await club.user_by_telegram_id(user_telegram_id)
+    user_telegram_id = request.from_user.id
+    user: ClubUser = await club.user_by_telegram_id(user_telegram_id)
 
     if not user or not user.approved:
         return
@@ -42,52 +33,3 @@ async def new_join_request(request: types.ChatJoinRequest, session: AsyncSession
     except TelegramBadRequest as e:
         if e.message != USER_ALREADY_PARTICIPANT:
             raise e
-
-    if chat_entry.show_intro or chat_entry.show_intro is None:
-        intro_link = hlink(user.full_name, user.user_link)
-        await bot.send_message(request.chat.id,
-                               f"У нас новый участник: {intro_link}!",
-                               parse_mode=ParseMode.HTML)
-
-    # notify current chats about option
-    if chat_entry.only_active is None:
-        await bot.send_message(request.chat.id,
-                               f"новая опция - проверка наличия актуального члентсва в клубе {hpre('/only_active')}",
-                               parse_mode=ParseMode.HTML)
-        chat_entry.only_active = False
-        await session.commit()
-
-    # notify current chats about option
-    if chat_entry.show_intro is None:
-        await bot.send_message(request.chat.id,
-                               f"включить/отключить авто whois - {hpre('/auto_whois')}",
-                               parse_mode=ParseMode.HTML)
-        chat_entry.show_intro = True
-        await session.commit()
-
-
-async def get_or_create_new_chat(chat_id, session: AsyncSession):
-
-    try:
-        stmt = await session.execute(
-            select(ChatEntry).where(ChatEntry.chat_id == chat_id)
-        )
-    except exc.DBAPIError as e:
-        if e.connection_invalidated:
-            logger.error("Connection was invalidated!")
-
-        stmt = await session.execute(
-            select(ChatEntry).where(ChatEntry.chat_id == chat_id)
-        )
-
-    is_new = False
-    try:
-        chat_entry: ChatEntry = stmt.scalars().one()
-    except NoResultFound:
-        is_new = True
-        chat_entry = ChatEntry(chat_id=chat_id, show_intro=None)
-        session.add(chat_entry)
-        with suppress(IntegrityError):
-            await session.commit()
-
-    return chat_entry, is_new

@@ -59,14 +59,14 @@ async def get_member_by_telegram_id(telegram_id):
         return
 
 
-async def user_by_telegram_id(telegram_id):
+async def user_by_telegram_id(telegram_id) -> ClubUser | None:
     club_profile = await get_member_by_telegram_id(telegram_id)
     if not club_profile:
-        return
+        return None
 
     user_profile: dict = club_profile.get('user')
 
     if not user_profile:
-        return
+        return None
 
     return ClubUser(**user_profile)
