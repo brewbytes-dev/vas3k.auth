@@ -24,7 +24,7 @@ class RepoChat:
             except NoResultFound:
                 pass
 
-            instance = ChatEntry(chat_id=chat_id, show_intro=True, only_active=False)
+            instance = ChatEntry(chat_id=chat_id)
             self.session.add(instance)
             await self.session.commit()
 

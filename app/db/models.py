@@ -6,5 +6,5 @@ class ChatEntry(Base):
     __tablename__ = "chats"
 
     chat_id = Column(BigInteger, primary_key=True)
-    show_intro = Column(Boolean, nullable=False)
-    only_active = Column(Boolean, nullable=False)
+    show_intro = Column(Boolean, nullable=False, default=True)
+    only_active = Column(Boolean, nullable=False, default=False)
