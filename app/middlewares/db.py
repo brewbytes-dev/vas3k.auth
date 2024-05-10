@@ -3,6 +3,8 @@ from typing import Callable, Awaitable, Dict, Any
 from aiogram import BaseMiddleware
 from aiogram.types import TelegramObject
 
+from app.repos.chats import RepoChat
+
 
 class DbSessionMiddleware(BaseMiddleware):
     def __init__(self, session_pool):
@@ -16,5 +18,5 @@ class DbSessionMiddleware(BaseMiddleware):
             data: Dict[str, Any],
     ) -> Any:
         async with self.session_pool() as session:
-            data["session"] = session
+            data["repo_chat"] = RepoChat(session)
             return await handler(event, data)

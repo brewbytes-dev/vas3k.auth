@@ -2,7 +2,6 @@ import logging
 
 from aiogram import types, Router
 from aiogram.exceptions import TelegramBadRequest
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from app import club
 from app.club import ClubUser
@@ -15,8 +14,7 @@ router = Router(name="join_requests")
 
 
 @router.chat_join_request()
-async def new_join_request(request: types.ChatJoinRequest, session: AsyncSession):
-    repo_chat = RepoChat(session)
+async def new_join_request(request: types.ChatJoinRequest, repo_chat: RepoChat):
     chat_entry = await repo_chat.get_or_create(request.chat.id)
 
     user_telegram_id = request.from_user.id

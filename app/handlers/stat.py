@@ -5,8 +5,6 @@ from aiogram import types, Router, F
 from aiogram.enums import ParseMode
 from aiogram.filters import Command
 from aiogram.utils.markdown import hlink
-from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.bot_loader import bot
 from app.config import DEVELOPER_ID
@@ -22,8 +20,7 @@ router.message.filter(DeveloperFilter(is_developer=True))
 
 
 @router.message(Command(commands=['stat']))
-async def show_groups(message: types.Message, session: AsyncSession):
-    repo_chat = RepoChat(session)
+async def show_groups(message: types.Message, repo_chat: RepoChat):
     chats = await repo_chat.get_all()
 
     chat: ChatEntry
