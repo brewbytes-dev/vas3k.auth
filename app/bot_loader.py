@@ -2,6 +2,7 @@ import re
 from pathlib import Path
 
 from aiogram import Bot
+from aiogram.enums import ParseMode
 
 from app import config
 
@@ -22,7 +23,7 @@ def _get_version():
 
 class AuthBot(Bot):
     def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+        super().__init__(*args, parse_mode=ParseMode.HTML, **kwargs)
         self._version = None
 
     @property
