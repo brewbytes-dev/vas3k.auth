@@ -15,6 +15,7 @@ router.message.filter(AdminFilter(is_admin=True))
 
 @router.message(Command(commands=['auto_whois']))
 async def show_intro(message: types.Message, repo_chat: RepoChat):
+    await repo_chat.get_or_create(message.chat.id)
     switched_status = await repo_chat.switch_show_intro(message.chat.id)
 
     if switched_status:
@@ -25,6 +26,7 @@ async def show_intro(message: types.Message, repo_chat: RepoChat):
 
 @router.message(Command(commands=['only_active']))
 async def only_active(message: types.Message, repo_chat: RepoChat):
+    await repo_chat.get_or_create(message.chat.id)
     switched_status = await repo_chat.switch_only_active(message.chat.id)
 
     if switched_status:
