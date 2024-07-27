@@ -1,7 +1,6 @@
 import logging
 
 from sqlalchemy import select, update
-from sqlalchemy.exc import NoResultFound
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.models import ChatEntry, RequestText
@@ -13,22 +12,18 @@ class RepoChat:
     def __init__(self, session: AsyncSession):
         self.session: AsyncSession = session
 
-    async def get_or_create(self, chat_id: int) -> ChatEntry:
+    async def get(self, chat_id: int) -> ChatEntry:
         async with self.session.begin():
             stmt = select(ChatEntry).filter_by(chat_id=chat_id)
-            try:
-                result = await self.session.execute(stmt)
-                instance = result.scalars().first()
-                if instance:
-                    return instance
-            except NoResultFound:
-                pass
+            result = await self.session.execute(stmt)
+            return result.scalars().one_or_none()
 
-            instance = ChatEntry(chat_id=chat_id)
-            self.session.add(instance)
+    async def create(self, chat_id: int) -> ChatEntry:
+        async with self.session.begin():
+            chat_entry = ChatEntry(chat_id=chat_id)
+            self.session.add(chat_entry)
             await self.session.commit()
-
-            return instance
+            return chat_entry
 
     async def update_chat_id(self, old_chat_id: int, new_chat_id: int) -> bool:
         async with self.session.begin():

@@ -1,6 +1,7 @@
 from typing import Callable, Awaitable, Dict, Any
 
 from aiogram import BaseMiddleware
+from aiogram.dispatcher.flags import get_flag
 from aiogram.types import TelegramObject
 
 from app.backend.chat import ChatBackend
@@ -9,7 +10,7 @@ from app.repos.chats import RepoChat
 from app.repos.release_notes import RepoReleaseNotes
 
 
-class DbSessionMiddleware(BaseMiddleware):
+class ReleaseNotesMiddleware(BaseMiddleware):
     def __init__(self, session_pool):
         super().__init__()
         self.session_pool = session_pool
@@ -20,13 +21,7 @@ class DbSessionMiddleware(BaseMiddleware):
             event: TelegramObject,
             data: Dict[str, Any],
     ) -> Any:
-        async with self.session_pool() as session:
-            data["chat_backend"] = ChatBackend(
-                RepoChat(session),
-                RepoRequests(session),
-                RepoReleaseNotes(session)
-            )
 
-            data["repo_chat"] = RepoChat(session)
-            data["repo_requests"] = RepoRequests(session)
+        rn = get_flag(data, "release_notes")
+        if not rn:
             return await handler(event, data)

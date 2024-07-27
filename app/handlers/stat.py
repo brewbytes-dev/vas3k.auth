@@ -6,11 +6,11 @@ from aiogram.enums import ParseMode
 from aiogram.filters import Command
 from aiogram.utils.markdown import hlink
 
+from app.backend.chat import ChatBackend
 from app.bot_loader import bot
 from app.config import DEVELOPER_ID
 from app.db.models import ChatEntry
 from app.filters.developer import DeveloperFilter
-from app.repos.chats import RepoChat
 
 logger = logging.getLogger(__name__)
 
@@ -20,8 +20,8 @@ router.message.filter(DeveloperFilter(is_developer=True))
 
 
 @router.message(Command(commands=['stat']))
-async def show_groups(message: types.Message, repo_chat: RepoChat):
-    chats = await repo_chat.get_all()
+async def show_groups(message: types.Message, chat_backend: ChatBackend):
+    chats = await chat_backend.get_all_chats()
 
     chat: ChatEntry
     chat_list = []
