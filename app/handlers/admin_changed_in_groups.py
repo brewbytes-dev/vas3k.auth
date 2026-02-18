@@ -8,6 +8,10 @@ from aiogram.types import ChatMemberUpdated
 router = Router(name="admin_group_changed")
 
 
+def _state_admin_ids(data: dict) -> set[int]:
+    return set(data.get("admin_ids") or [])
+
+
 @router.chat_member(
     ChatMemberUpdatedFilter(
         member_status_changed=
@@ -18,7 +22,7 @@ router = Router(name="admin_group_changed")
 )
 async def admin_promoted(event: ChatMemberUpdated, state: FSMContext):
     data = await state.get_data()
-    admin_ids: set = set(data.get("admin_ids"))
+    admin_ids = _state_admin_ids(data)
     admin_ids.add(event.new_chat_member.user.id)
     await state.update_data(admin_ids=list(admin_ids))
 
@@ -33,6 +37,6 @@ async def admin_promoted(event: ChatMemberUpdated, state: FSMContext):
 )
 async def admin_demoted(event: ChatMemberUpdated, state: FSMContext):
     data = await state.get_data()
-    admin_ids: set = set(data.get("admin_ids"))
-    admin_ids.discard(event.new_chat_member.user.id)
+    admin_ids = _state_admin_ids(data)
+    admin_ids.discard(event.old_chat_member.user.id)
     await state.update_data(admin_ids=list(admin_ids))

@@ -1,5 +1,6 @@
 import asyncio
 import logging
+from typing import Any
 
 import sentry_sdk
 from aiogram.types import BotCommand, BotCommandScopeAllPrivateChats
@@ -12,8 +13,18 @@ from app.middlewares.admin import AdminMiddleware
 from app.middlewares.db import DbSessionMiddleware
 from loader import dp
 
+
+def _before_send(event: dict[str, Any], hint: dict[str, Any]) -> dict[str, Any] | None:
+    msg = event.get("message") or ""
+    if msg.startswith("Failed to fetch updates - TelegramNetworkError"):
+        return None
+    if msg.startswith("Failed to fetch updates - TelegramServerError"):
+        return None
+    return event
+
+
 if config.SENTRY_DSN:
-    sentry_sdk.init(config.SENTRY_DSN, traces_sample_rate=0.5)
+    sentry_sdk.init(config.SENTRY_DSN, traces_sample_rate=0.5, before_send=_before_send)
 
 logger = logging.getLogger(__name__)
 
