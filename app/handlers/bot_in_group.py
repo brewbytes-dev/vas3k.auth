@@ -1,5 +1,8 @@
+import logging
+
 from aiogram import F, Router, Bot
 from aiogram.enums import ParseMode
+from aiogram.exceptions import TelegramBadRequest
 from aiogram.filters.chat_member_updated import (ChatMemberUpdatedFilter,
                                                  PROMOTED_TRANSITION,
                                                  JOIN_TRANSITION, ADMINISTRATOR)
@@ -11,6 +14,7 @@ from app.repos.chats import RepoChat
 
 router = Router(name="bot_in_group")
 router.my_chat_member.filter(F.chat.type.in_({"group", "supergroup"}))
+logger = logging.getLogger(__name__)
 
 ADD_USERS_MESSAGE = ("⚠️ Чтобы бот мог добавлять пользователей, дай ему права на это "
                      "(Add members | Invite users | Добавлять пользователей | Приглашать пользователей)")
@@ -95,6 +99,12 @@ async def new_user_joined(event: ChatMemberUpdated, repo_chat: RepoChat):
     if user_link == "":
         return
 
-    await event.answer(f"🎉 У нас новый участник: {user_link}!",
-                       parse_mode=ParseMode.HTML,
-                       disable_web_page_preview=True)
+    try:
+        await event.answer(f"🎉 У нас новый участник: {user_link}!",
+                           parse_mode=ParseMode.HTML,
+                           disable_web_page_preview=True)
+    except TelegramBadRequest as exc:
+        if "TOPIC_CLOSED" in str(exc):
+            logger.info("Skip intro message: topic is closed in chat %s", event.chat.id)
+            return
+        raise
