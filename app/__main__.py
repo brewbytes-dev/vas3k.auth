@@ -20,6 +20,8 @@ def _before_send(event: dict[str, Any], hint: dict[str, Any]) -> dict[str, Any] 
         return None
     if msg.startswith("Failed to fetch updates - TelegramServerError"):
         return None
+    if msg.startswith("TelegramBadRequest: Telegram server says - Bad Request: TOPIC_CLOSED"):
+        return None
     return event
 
 
