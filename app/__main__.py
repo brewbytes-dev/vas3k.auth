@@ -73,9 +73,7 @@ async def setup_commands():
 
 
 if __name__ == '__main__':
-    while True:
-        try:
-            asyncio.run(main())
-        except (KeyboardInterrupt, SystemExit):
-            logger.info("Bot stopped!")
-            exit(0)
+    try:
+        asyncio.run(main())
+    except (KeyboardInterrupt, SystemExit):
+        logger.info("Bot stopped!")
