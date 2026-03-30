@@ -2,6 +2,7 @@ from typing import Callable, Awaitable, Dict, Any
 
 from aiogram import BaseMiddleware
 from aiogram.types import TelegramObject
+from sqlalchemy.exc import DBAPIError
 
 from app.repos.chats import RepoChat
 
@@ -17,6 +18,14 @@ class DbSessionMiddleware(BaseMiddleware):
             event: TelegramObject,
             data: Dict[str, Any],
     ) -> Any:
-        async with self.session_pool() as session:
-            data["repo_chat"] = RepoChat(session)
-            return await handler(event, data)
+        try:
+            async with self.session_pool() as session:
+                data["repo_chat"] = RepoChat(session)
+                return await handler(event, data)
+        except DBAPIError as exc:
+            # Transient asyncpg disconnects happen on stale pooled connections; retry once.
+            if "connection was closed in the middle of operation" not in str(exc):
+                raise
+            async with self.session_pool() as session:
+                data["repo_chat"] = RepoChat(session)
+                return await handler(event, data)

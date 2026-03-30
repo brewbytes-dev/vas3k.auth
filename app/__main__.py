@@ -15,10 +15,22 @@ from loader import dp
 
 
 def _before_send(event: dict[str, Any], hint: dict[str, Any]) -> dict[str, Any] | None:
-    msg = event.get("message") or ""
+    logentry = event.get("logentry") or {}
+    msg = "\n".join(
+        part
+        for part in (
+            event.get("message") or "",
+            logentry.get("formatted") or logentry.get("message") or "",
+        )
+        if part
+    )
     if msg.startswith("Failed to fetch updates - TelegramNetworkError"):
         return None
     if msg.startswith("Failed to fetch updates - TelegramServerError"):
+        return None
+    if msg.startswith("Failed to fetch updates - TelegramRetryAfter"):
+        return None
+    if "Cause exception while getting updates." in msg and "Bad Gateway" in msg:
         return None
     if msg.startswith("TelegramBadRequest: Telegram server says - Bad Request: TOPIC_CLOSED"):
         return None
@@ -43,7 +55,16 @@ DEFAULT_USER_COMMANDS = [
 async def main():
     logger.info("Starting bot")
 
-    engine = create_async_engine(config.DATABASE_DSN, future=True, echo=False, pool_recycle=3600)
+    engine = create_async_engine(
+        config.DATABASE_DSN,
+        future=True,
+        echo=False,
+        pool_recycle=1800,
+        pool_pre_ping=True,
+        pool_size=5,
+        max_overflow=2,
+        pool_timeout=30,
+    )
     db_pool = async_sessionmaker(engine, expire_on_commit=False, class_=AsyncSession)
 
     await setup_commands()
