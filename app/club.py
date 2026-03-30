@@ -1,4 +1,5 @@
 import logging
+import json
 from dataclasses import dataclass, fields
 
 import aiohttp
@@ -9,6 +10,28 @@ logger = logging.getLogger(__name__)
 VAS3K_ENDPOINT = "https://vas3k.club"
 BY_TELEGRAM_ID = "/by_telegram_id"
 USER = "/user"
+
+
+async def _parse_json_response(response: aiohttp.ClientResponse) -> dict | None:
+    if response.status != 200:
+        logger.warning("Club API request failed: status=%s url=%s", response.status, response.url)
+        return None
+
+    response_body = await response.text()
+    try:
+        parsed = json.loads(response_body)
+    except json.JSONDecodeError:
+        logger.warning(
+            "Club API returned non-JSON response: content_type=%s url=%s",
+            response.headers.get("Content-Type"),
+            response.url,
+        )
+        return None
+
+    if not isinstance(parsed, dict):
+        logger.warning("Club API returned unexpected payload type: %s", type(parsed).__name__)
+        return None
+    return parsed
 
 
 @dataclass(init=False)
@@ -40,7 +63,7 @@ async def get_member_by_username(username):
                 f"{VAS3K_ENDPOINT}{USER}/{username}.json?service_token={JWT_TOKEN}",
                 params={"service_token": JWT_TOKEN}
             ) as response:
-                return await response.json()
+                return await _parse_json_response(response)
     except Exception as e:
         logger.exception(e)
         return None
@@ -53,7 +76,7 @@ async def get_member_by_telegram_id(telegram_id):
                 f"{VAS3K_ENDPOINT}{USER}{BY_TELEGRAM_ID}/{telegram_id}.json",
                 params={"service_token": JWT_TOKEN}
             ) as response:
-                return await response.json()
+                return await _parse_json_response(response)
     except Exception as e:
         logger.exception(e)
         return
