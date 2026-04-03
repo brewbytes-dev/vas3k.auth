@@ -24,14 +24,27 @@ def _before_send(event: dict[str, Any], hint: dict[str, Any]) -> dict[str, Any] 
         )
         if part
     )
-    if msg.startswith("Failed to fetch updates - TelegramNetworkError"):
+    msg_l = msg.lower()
+
+    transient_polling_markers = (
+        "failed to fetch updates - telegramnetworkerror",
+        "failed to fetch updates - telegramservererror",
+        "failed to fetch updates - telegramretryafter",
+        "cause exception while getting updates.",
+        "bad gateway",
+        "request timeout error",
+    )
+    if any(marker in msg_l for marker in transient_polling_markers):
         return None
-    if msg.startswith("Failed to fetch updates - TelegramServerError"):
+
+    transient_db_markers = (
+        "connection was closed in the middle of operation",
+        "remaining connection slots are reserved for non-replication superuser connections",
+        "consuming input failed",
+    )
+    if any(marker in msg_l for marker in transient_db_markers):
         return None
-    if msg.startswith("Failed to fetch updates - TelegramRetryAfter"):
-        return None
-    if "Cause exception while getting updates." in msg and "Bad Gateway" in msg:
-        return None
+
     if msg.startswith("TelegramBadRequest: Telegram server says - Bad Request: TOPIC_CLOSED"):
         return None
     return event

@@ -24,7 +24,13 @@ class DbSessionMiddleware(BaseMiddleware):
                 return await handler(event, data)
         except DBAPIError as exc:
             # Transient asyncpg disconnects happen on stale pooled connections; retry once.
-            if "connection was closed in the middle of operation" not in str(exc):
+            exc_text = str(exc).lower()
+            transient_db_markers = (
+                "connection was closed in the middle of operation",
+                "remaining connection slots are reserved for non-replication superuser connections",
+                "consuming input failed",
+            )
+            if not any(marker in exc_text for marker in transient_db_markers):
                 raise
             async with self.session_pool() as session:
                 data["repo_chat"] = RepoChat(session)
