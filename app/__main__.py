@@ -25,6 +25,12 @@ def _before_send(event: dict[str, Any], hint: dict[str, Any]) -> dict[str, Any] 
         if part
     )
     msg_l = msg.lower()
+    exc_info = hint.get("exc_info") if hint else None
+    exc = exc_info[1] if exc_info and len(exc_info) > 1 else None
+    exc_name = exc.__class__.__name__.lower() if exc is not None else ""
+
+    if "failed to fetch updates" in msg_l:
+        return None
 
     transient_polling_markers = (
         "failed to fetch updates - telegramnetworkerror",
@@ -36,6 +42,8 @@ def _before_send(event: dict[str, Any], hint: dict[str, Any]) -> dict[str, Any] 
     )
     if any(marker in msg_l for marker in transient_polling_markers):
         return None
+    if exc_name in {"telegramnetworkerror", "telegramservererror", "telegramretryafter", "timeouterror"}:
+        return None
 
     transient_db_markers = (
         "connection was closed in the middle of operation",
@@ -43,6 +51,8 @@ def _before_send(event: dict[str, Any], hint: dict[str, Any]) -> dict[str, Any] 
         "consuming input failed",
     )
     if any(marker in msg_l for marker in transient_db_markers):
+        return None
+    if exc_name in {"connectiondoesnotexisterror", "operationalerror", "dbapierror"}:
         return None
 
     if msg.startswith("TelegramBadRequest: Telegram server says - Bad Request: TOPIC_CLOSED"):
